@@ -4,12 +4,10 @@
 \alias{crm2vgm}
 \title{Converting a spatial correlogram model to a variogram model}
 \usage{
-crm2vgm(crm, ...)
+crm2vgm(crm)
 }
 \arguments{
 \item{crm}{object of a class "SpatialCorrelogramModel", output of makecrm().}
-
-\item{...}{Parameters that can be passed to vgm().}
 }
 \value{
 An object of a class "variogramModel" extending data.frame.
@@ -25,4 +23,3 @@ residuals is fixed and standardized to 1.
 \author{
 Kasia Sawicka, Gerard Heuvelink
 }
-

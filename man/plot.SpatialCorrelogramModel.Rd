@@ -4,7 +4,8 @@
 \alias{plot.SpatialCorrelogramModel}
 \title{Plots correlogram model}
 \usage{
-\method{plot}{SpatialCorrelogramModel}(x, distance = 1, ylim = c(0, 1), ...)
+\method{plot}{SpatialCorrelogramModel}(x, distance = 1, ylim = c(0, 1),
+  xlab = "Distance", ylab = "Correlation", ...)
 }
 \arguments{
 \item{x}{Object of class "SpatialCorrelogramModel" as created by makecrm().}
@@ -13,6 +14,10 @@
 with the unit of the range parameter in makecrm()).}
 
 \item{ylim}{the y limits of the plot.}
+
+\item{xlab}{a title for the x axis.}
+
+\item{ylab}{a title for the y axis.}
 
 \item{...}{additional parameters.}
 }
@@ -31,4 +36,3 @@ plot(mycormodel, distance = 1)
 \author{
 Kasia Sawicka, Gerard Heuvelink
 }
-

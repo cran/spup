@@ -39,8 +39,8 @@ summary(TN)
 
 ## ------------------------------------------------------------------------
 # define spatial correlogram models
-OC_crm <- makecrm(acf0 = 0.6, range = 1000, model = "Sph")
-TN_crm <- makecrm(acf0 = 0.4, range = 1000, model = "Sph")
+OC_crm <- makecrm(acf0 = 0.6, range = 5000, model = "Sph")
+TN_crm <- makecrm(acf0 = 0.4, range = 5000, model = "Sph")
 
 ## ---- fig.width = 7, fig.height = 3--------------------------------------
 plot(OC_crm, main = "OC correlogram")
@@ -71,9 +71,11 @@ OCTN_sample
 plot(OCTN_sample)
 
 ## ------------------------------------------------------------------------
-# create possible realizations from the joint distribution of OC and TN
-MC <- 100
-OCTN_sample <- genSample(UMobject = mySpatialMUM, n = MC, samplemethod = "ugs", nmax = 20, asList = FALSE)
+# create possible realizations from the joint 
+# distribution of OC and TN
+MC <- 500
+OCTN_sample <- genSample(UMobject = mySpatialMUM, n = MC,
+                         samplemethod = "ugs", nmax = 20, asList = FALSE)
 
 ## ---- fig.width = 7, fig.height = 3--------------------------------------
 # compute and plot OC and TN sample statistics
@@ -89,18 +91,26 @@ par(mfrow= c(1,2))
 plot(OC_sample_mean, main = "Mean of OC realizations")
 plot(TN_sample_mean, main = "Mean of TN realizations")
 
-## ---- fig.width = 5, fig.height = 5--------------------------------------
+## ---- fig.width = 5, fig.height = 5, warning = FALSE---------------------
 # R package GGally provides a nice option for plotting correlations
 library(GGally)
-octn <- cbind(as.data.frame(OC_sample[[1]]), as.data.frame(TN_sample[[1]]))
-ggscatmat(data = octn, alpha=0.15) 
- # + theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+# octn <- cbind(as.data.frame(OC_sample[[1]]), as.data.frame(TN_sample[[1]]))
+octn <- cbind(as.data.frame(t(OC_sample[1,1,])), as.data.frame(t(TN_sample[1,1,])),
+              as.data.frame(t(OC_sample[1,2,])), as.data.frame(t(TN_sample[1,2,])),
+              as.data.frame(t(OC_sample[10,10,])), as.data.frame(t(TN_sample[10,10,])))
+colnames(octn) <- c("OC_loc1", "TN_loc1", "OC_loc2", "TN_loc2", "OC_loc3", "TN_loc3")
 
+ggscatmat(data = octn, alpha=0.15) 
 
 ## ------------------------------------------------------------------------
 # source code for the C/N model
 source("examples/C_N_model_raster.R")
 C_N_model_raster
+
+# C/N model
+C_N_model_raster <- function (OC, TN) OC/TN
+
+
 
 ## ------------------------------------------------------------------------
 # coerce  a raster stack to a list 
@@ -155,8 +165,8 @@ CN_q <- quantile_MC_sgdf(CN_sample_df, probs = c(0.1, 0.25, 0.75, 0.9), na.rm = 
 spplot(CN_q[c(3,4,1,2)], main = list(label = "Quantiles of C/N realizations", cex = 1))
 
 ## ---- fig.width = 7, fig.height = 7--------------------------------------
-CN_q$good4crops <- factor(ifelse(CN_q$prob90perc < 24, 1, 0), labels = c("Good quality","Improvements needed"))
-spplot(CN_q, "good4crops", col.regions = c("darkolivegreen2","firebrick1"), main = "Areas with sufficient C/N")
+CN_q$good4crops <- factor(ifelse(CN_q$prob10perc > 20, 1, 0), labels = c("<90% certain", ">90% certain"))
+spplot(CN_q, "good4crops", col.regions = c("firebrick1", "darkolivegreen2"), main = "Areas with sufficient C/N for cropping")
 
 ## ---- fig.width = 7, fig.height = 7--------------------------------------
 # calculate total variance as a measure of total uncertainty

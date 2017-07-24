@@ -6,10 +6,12 @@ output: rmarkdown::html_vignette
 # output: rmarkdown::word_document
 subtitle: Case study with cross-correlated variables
 vignette: >
-  %\VignetteIndexEntry{Spatial uncertainty propagation analysis}
+  %\VignetteIndexEntry{Case study with cross-correlated variables}
   %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
 ---
+
+# Case study with cross-correlated variables
 
 
 ```{r, echo = FALSE}
@@ -111,8 +113,8 @@ Let us assume that the spatial autocorrelation of the OC and TN errors is an are
 
 ```{r} 
 # define spatial correlogram models
-OC_crm <- makecrm(acf0 = 0.6, range = 1000, model = "Sph")
-TN_crm <- makecrm(acf0 = 0.4, range = 1000, model = "Sph")
+OC_crm <- makecrm(acf0 = 0.6, range = 5000, model = "Sph")
+TN_crm <- makecrm(acf0 = 0.4, range = 5000, model = "Sph")
 ```
 
 We can view the correlograms by plotting them.
@@ -192,9 +194,11 @@ plot(OCTN_sample)
 Usually the sample must be large to obtain stable results. Let us run the sampling to obtain 100 realizations. This may take a minute.
 
 ```{r}
-# create possible realizations from the joint distribution of OC and TN
-MC <- 100
-OCTN_sample <- genSample(UMobject = mySpatialMUM, n = MC, samplemethod = "ugs", nmax = 20, asList = FALSE)
+# create possible realizations from the joint 
+# distribution of OC and TN
+MC <- 500
+OCTN_sample <- genSample(UMobject = mySpatialMUM, n = MC,
+                         samplemethod = "ugs", nmax = 20, asList = FALSE)
 ```
 
 We can view the means and standard deviations of the sampled OC and TN. If the number of samples was very large then the mean of the sample of each would equal the mean  OC and TN, and the sd would equal their sds.
@@ -216,13 +220,16 @@ plot(TN_sample_mean, main = "Mean of TN realizations")
 
 We can also view the cross-corelations between two variables.
 
-```{r, fig.width = 5, fig.height = 5} 
+```{r, fig.width = 5, fig.height = 5, warning = FALSE} 
 # R package GGally provides a nice option for plotting correlations
 library(GGally)
-octn <- cbind(as.data.frame(OC_sample[[1]]), as.data.frame(TN_sample[[1]]))
-ggscatmat(data = octn, alpha=0.15) 
- # + theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+# octn <- cbind(as.data.frame(OC_sample[[1]]), as.data.frame(TN_sample[[1]]))
+octn <- cbind(as.data.frame(t(OC_sample[1,1,])), as.data.frame(t(TN_sample[1,1,])),
+              as.data.frame(t(OC_sample[1,2,])), as.data.frame(t(TN_sample[1,2,])),
+              as.data.frame(t(OC_sample[10,10,])), as.data.frame(t(TN_sample[10,10,])))
+colnames(octn) <- c("OC_loc1", "TN_loc1", "OC_loc2", "TN_loc2", "OC_loc3", "TN_loc3")
 
+ggscatmat(data = octn, alpha=0.15) 
 ```
 
 
@@ -234,6 +241,11 @@ In order to perform uncertainty propagation analysis using 'spup', the model thr
 # source code for the C/N model
 source("examples/C_N_model_raster.R")
 C_N_model_raster
+
+# C/N model
+C_N_model_raster <- function (OC, TN) OC/TN
+
+
 ```
 
 The propagation of uncertainty occurs when the model is run with the uncertain inputs. Running the model with a sample of realizations of uncertain input variable(s) yields an equally large sample of model outputs that can be further analyzed. To run the C/N ratio model with the OC and TN realizations we use the `propagate()` function. The `propagate()` function takes as arguments:
@@ -316,8 +328,8 @@ spplot(CN_q[c(3,4,1,2)], main = list(label = "Quantiles of C/N realizations", ce
 We may also identify all locations where the C/N ratio is smaller than 24, with 90% probability. This information might be used by farmers to identify which plots require action on improving soil quality.
 
 ```{r, fig.width = 7, fig.height = 7}
-CN_q$good4crops <- factor(ifelse(CN_q$prob90perc < 24, 1, 0), labels = c("Good quality","Improvements needed"))
-spplot(CN_q, "good4crops", col.regions = c("darkolivegreen2","firebrick1"), main = "Areas with sufficient C/N")
+CN_q$good4crops <- factor(ifelse(CN_q$prob10perc > 20, 1, 0), labels = c("<90% certain", ">90% certain"))
+spplot(CN_q, "good4crops", col.regions = c("firebrick1", "darkolivegreen2"), main = "Areas with sufficient C/N for cropping")
 ```
 <br>
 
