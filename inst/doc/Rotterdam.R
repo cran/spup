@@ -23,17 +23,32 @@ par(mar = c(3, 3, 2, 2), mgp = c(1.7, 0.5, 0), las = 1, cex.main = 1, tcl = -0.2
 library(sp)
 library(spup)
 library(purrr)
+library(png)
 
-# tax model script
-source("examples/tax.R")
-
-# set seed
 set.seed(12345)
 
-# load and view the data
+# load data
 data(woon)
-plot(woon, main = "Neighbourhood", cex.main = 1)
-head(woon@data)
+# Netherlands contour and Rtterdam location
+NL <- readPNG("RotterdamNL.png")
+# collate info about fugure size and type 										
+NL_map <- list("grid.raster", NL, x = 89987, y = 436047, width = 120,   
+				height = 152, default.units = 'native')
+# collate info about a scale bar location in the figure, type and colour
+scale <- list("SpatialPolygonsRescale", layout.scale.bar(), 			
+			  offset = c(90000,435600), scale = 100, fill=c("transparent","black"))
+# collate info about minimum value on a scale bar
+text1 <- list("sp.text", c(89990,435600), "0", cex = 0.8)
+# collate info about maximum value on a scale bar
+text2 <- list("sp.text", c(90130,435600), "500 m", cex = 0.8)
+# collate info about North arrow
+arrow <- list("SpatialPolygonsRescale", layout.north.arrow(),
+              offset = c(89990,435630), scale = 50)
+# plot 'woon' object with a location miniature, North arrow and scale bar defined above      
+spplot(woon, "check", do.log = TRUE, col.regions = "transparent",
+	   colorkey = FALSE, key.space = list(x = 0.1, y = 0.93, corner = c(0,1)),
+sp.layout = list(scale, text1, text2 ,arrow, NL_map),	
+                 main = "Neighbourhood in Rotterdam, NL")
 
 ## ------------------------------------------------------------------------
 # define uncertainty model for the bulding function
@@ -56,8 +71,14 @@ class(woon_sample)
 spplot(woon_sample[c(3,4,1,2)], main = list(label = "Examples of building function realizations", cex = 1))
 
 ## ------------------------------------------------------------------------
-# view the model
-tax
+tax <- function(building_Function) { 
+  building_Function$tax2pay <- NA
+  building_Function$tax2pay[building_Function$Function == 1] <- 1000
+  building_Function$tax2pay[building_Function$Function == 2] <- 10000
+  building_Function$tax2pay[building_Function$Function == 3] <- 10
+  total_tax <- sum(building_Function$tax2pay)
+  total_tax
+}
 
 ## ------------------------------------------------------------------------
 # coerce  SpatialPolygonDataFrame to a list of individual SpatialPolygonDataFrames

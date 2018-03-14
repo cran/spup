@@ -39,8 +39,8 @@ summary(TN)
 
 ## ------------------------------------------------------------------------
 # define spatial correlogram models
-OC_crm <- makecrm(acf0 = 0.6, range = 5000, model = "Sph")
-TN_crm <- makecrm(acf0 = 0.4, range = 5000, model = "Sph")
+OC_crm <- makeCRM(acf0 = 0.6, range = 5000, model = "Sph")
+TN_crm <- makeCRM(acf0 = 0.4, range = 5000, model = "Sph")
 
 ## ---- fig.width = 7, fig.height = 3--------------------------------------
 plot(OC_crm, main = "OC correlogram")

@@ -8,10 +8,10 @@
   xlab = "Distance", ylab = "Correlation", ...)
 }
 \arguments{
-\item{x}{Object of class "SpatialCorrelogramModel" as created by makecrm().}
+\item{x}{Object of class "SpatialCorrelogramModel" as created by makeCRM().}
 
 \item{distance}{minimum distance between locations (unit should correspond
-with the unit of the range parameter in makecrm()).}
+with the unit of the range parameter in makeCRM()).}
 
 \item{ylim}{the y limits of the plot.}
 
@@ -29,7 +29,7 @@ Plots correlogram model
 }
 \examples{
 
-mycormodel <- makecrm(acf0 = 0.8, range = 300, model = "Exp")
+mycormodel <- makeCRM(acf0 = 0.8, range = 300, model = "Exp")
 plot(mycormodel, distance = 1)
 
 }

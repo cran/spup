@@ -42,20 +42,20 @@ grid.arrange(spplot(dem30m, main = list(label = "Mean DEM [m]", cex = 1)),
 
 ## ------------------------------------------------------------------------
 # define spatial correlogram model
-dem_crm <- makecrm(acf0 = 0.8, range = 300, model = "Exp")
+dem_crm <- makeCRM(acf0 = 0.8, range = 300, model = "Exp")
 
 ## ---- fig.width = 5, fig.height = 3--------------------------------------
 plot(dem_crm, main = "DEM correlogram")
 
 ## ---- fig.width = 7, fig.height = 5--------------------------------------
 par(mfrow = c(2, 2))
-crm <- makecrm(acf0 = 0.8, range = 700, model = "Sph") 
+crm <- makeCRM(acf0 = 0.8, range = 700, model = "Sph") 
 plot(crm, main = "'Spherical', acf0 = 0.8, range = 700")
-crm <- makecrm(acf0 = 0.2, range = 700, model = "Sph") 
+crm <- makeCRM(acf0 = 0.2, range = 700, model = "Sph") 
 plot(crm, main = "'Spherical', acf0 = 0.2, range = 700")
-crm <- makecrm(acf0 = 0.8, range = 700, model = "Lin") 
+crm <- makeCRM(acf0 = 0.8, range = 700, model = "Lin") 
 plot(crm, main = "'Linear', acf0 = 1.0, range = 700")
-crm <- makecrm(acf0 = 0.8, range = 200, model = "Gau") 
+crm <- makeCRM(acf0 = 0.8, range = 200, model = "Gau") 
 plot(crm, main = "'Gaussian', acf0 = 0.8, range = 200")
 
 ## ------------------------------------------------------------------------
@@ -80,7 +80,7 @@ grid.arrange(spplot(dem_sample_mean, main = list(label = "Mean of the DEM realiz
              spplot(dem_sample_sd, main = list(label = "Standard dev. of the DEM realizations", cex = 1)))
 
 ## ---- fig.width = 5, fig.height = 6--------------------------------------
-dem_crm2 <- makecrm(acf0 = 0.2, range = 300, model = "Exp")
+dem_crm2 <- makeCRM(acf0 = 0.2, range = 300, model = "Exp")
 demUM2 <- defineUM(uncertain = TRUE, distribution = "norm", distr_param = c(dem30m, dem30m_sd), crm = dem_crm2)
 dem_sample2 <- genSample(UMobject = demUM2, n = 100, samplemethod = "ugs", nmax = 20, asList = FALSE,
                          debug.level = -1)

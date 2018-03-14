@@ -22,19 +22,20 @@ for uncertain cross-correlated variables.
 }
 \details{
 The cormatrix is a square matrix of correlations,
-dimentionally equal to the number of objects, symetric 
+dimensionally equal to the number of objects, symmetrical 
 (transposed must be the same as original), diagonal must all be 1
 all values must be <-1, +1>) and all eigenvalues must be > 0.
+The marginal Um objects must have provided id.
 }
 \examples{
 
 set.seed(12345)
 
 data(OC, OC_sd, TN, TN_sd)
-OC_crm <- makecrm(acf0 = 0.6, range = 5000, model = "Sph")
+OC_crm <- makeCRM(acf0 = 0.6, range = 5000, model = "Sph")
 OC_UM <- defineUM(TRUE, distribution = "norm", distr_param = c(OC, OC_sd), crm = OC_crm, id = "OC")
 class(OC_UM)
-TN_crm <- makecrm(acf0 = 0.4, range = 5000, model = "Sph")
+TN_crm <- makeCRM(acf0 = 0.4, range = 5000, model = "Sph")
 TN_UM <- defineUM(TRUE, distribution = "norm", distr_param = c(TN, TN_sd), crm = TN_crm, id = "TN")
 class(TN_UM)
 
