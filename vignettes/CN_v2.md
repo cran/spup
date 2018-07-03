@@ -1,7 +1,7 @@
 ---
 title: "Spatial Uncertainty Propagation Analysis"
 author: "Kasia Sawicka and Gerard Heuvelink"
-date: "`r Sys.Date()`"
+date: "2018-02-15"
 output: rmarkdown::html_vignette
 # output: rmarkdown::word_document
 subtitle: Case study with cross-correlated variables
@@ -11,42 +11,14 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{r, include = FALSE}
-is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
-             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
-knitr::opts_chunk$set(eval = !is_check)
-```
-
-```{r}
-Sys.sleep(100)
-```
-
-
 # Case study with cross-correlated variables
 
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-    comment = NA,
-    quiet = TRUE,
-    progress = FALSE,
-    tidy = FALSE,
-    cache = FALSE,
-    message = FALSE,
-    error = FALSE, # FALSE: always stop execution.
-    warning = TRUE,
-    dpi = 100
-)
-```
 
-```{r, echo = FALSE}
-knitr::opts_knit$set(global.par = TRUE)
-```
 
-```{r, echo = FALSE}
-par(mar = c(3, 4, 2, 2), mgp = c(1.7, 0.5, 0), las = 1, cex.main = 1, tcl = -0.2, cex.axis = 0.8,
-    cex.lab = 0.8)
-```
+
+
+
 
 
 ### Introduction/Problem definition
@@ -70,9 +42,9 @@ Note that the above ignores uncertainty in model parameters and model structure,
 
 For each uncertain spatially distributed continuous variable, such as soil organic carbon content, rainfall or elevation we assume the following geostatistical model:
 
-	Z(x)= μ(x)+ σ(x)∙ε(x)
+	Z(x)= �(x)+ s(x)�e(x)
 
-where x is geographic location,  μ is the (deterministic) mean of Z, σ is its standard deviation and ε is is standard normal, second-order stationary stochastic residual, whose spatial autocorrelation is modelled with a semivariogram or correlogram. Note that ε has zero mean and unit variance. Both μ and σ may vary in space so that spatial trends and spatially variable uncertainty can be taken into account. The cross-correlations are modelled using a linear model of co-regionalization (Wackernagel, 2003). The random sample is drawn from the pdf of ε to further calculate a sample from Z.
+where x is geographic location,  � is the (deterministic) mean of Z, s is its standard deviation and e is is standard normal, second-order stationary stochastic residual, whose spatial autocorrelation is modelled with a semivariogram or correlogram. Note that e has zero mean and unit variance. Both � and s may vary in space so that spatial trends and spatially variable uncertainty can be taken into account. The cross-correlations are modelled using a linear model of co-regionalization (Wackernagel, 2003). The random sample is drawn from the pdf of e to further calculate a sample from Z.
 
 <br>
 
@@ -87,7 +59,8 @@ The example data for C/N calculations are a 250m resolution mean OC and TN (tota
 The 'Madagascar' dataset contains four spatial objects: a mean OC and TN of the area and their standard deviations. It also has a saved function that calculates C/N using OC and TN that will be used later.
 
 
-```{r, fig.width = 7, fig.height = 3} 
+
+```r
 # load packages
 library(spup)
 library(raster)
@@ -100,11 +73,57 @@ set.seed(12345)
 data(OC, OC_sd, TN, TN_sd)
 par(mfrow = c(1,2))
 class(OC)
+```
+
+```
+[1] "RasterLayer"
+attr(,"package")
+[1] "raster"
+```
+
+```r
 class(TN)
+```
+
+```
+[1] "RasterLayer"
+attr(,"package")
+[1] "raster"
+```
+
+```r
 plot(OC, main = "Mean of Organic Carbon") 
 plot(TN, main = "Mean of Total Nitrogen")
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
+
+```r
 summary(OC)
+```
+
+```
+        OC_Madagaskar_xd1_250m
+Min.                   7.00000
+1st Qu.               14.33333
+Median                23.00000
+3rd Qu.               39.66667
+Max.                 103.00000
+NA's                1545.00000
+```
+
+```r
 summary(TN)
+```
+
+```
+        TN_Madagaskar_xd1_250m
+Min.                     0.609
+1st Qu.                  1.000
+Median                   1.320
+3rd Qu.                  2.080
+Max.                     3.740
+NA's                  1545.000
 ```
 
 
@@ -116,24 +135,28 @@ The first step in uncertainty propagation analysis is to define an uncertainty m
 
 First, the marginal uncertainty model is defined for each variable separately, and next the joint uncertainty model is defined for the variables together.
 
-In case of OC and TN, the ε are spatially correlated and in order to include this in the analysis, we need to describe it by spatial correlograms. For each of the variables, the `makeCRM()` function collates all necessary information into a list.
+In case of OC and TN, the e are spatially correlated and in order to include this in the analysis, we need to describe it by spatial correlograms. For each of the variables, the `makecrm()` function collates all necessary information into a list.
 
 Let us assume that the spatial autocorrelation of the OC and TN errors is an are described by spherical correlation function with a short-distance correlation of 0.6 for OC and 0.4 for TN, and a range parameter of 1000m. It is important at this step to ensure that the correlation function types as well as the ranges are the same for each variable. It is a requirement for further analysis, becasue _spup_ employs the model of co-regionalization (Wackernagel,  H.  2003).
 
 <br>
 
-```{r} 
+
+```r
 # define spatial correlogram models
-OC_crm <- makeCRM(acf0 = 0.6, range = 5000, model = "Sph")
-TN_crm <- makeCRM(acf0 = 0.4, range = 5000, model = "Sph")
+OC_crm <- makecrm(acf0 = 0.6, range = 5000, model = "Sph")
+TN_crm <- makecrm(acf0 = 0.4, range = 5000, model = "Sph")
 ```
 
 We can view the correlograms by plotting them.
 
-```{r, fig.width = 7, fig.height = 3} 
+
+```r
 plot(OC_crm, main = "OC correlogram")
 plot(TN_crm, main = "TN correlogram")
 ```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
 
 Spatial correlograms summarise patterns of spatial autocorrelation in data and model residuals. They show the degree of correlation between values at two locations as a function of the separation distance between the locations. In the case above the correlation declines with distance, as is usually the case. The correlation is zero for distances greater than 1000m. More about correlograms is included in the DEM vignette.
 
@@ -146,12 +169,24 @@ In order to complete the description of each individual uncertain variable we us
 * the variable id.
 
 
-```{r} 
+
+```r
 # define uncertainty model for the OC and TN
 OC_UM <- defineUM(TRUE, distribution = "norm", distr_param = c(OC, OC_sd), crm = OC_crm, id = "OC")
 TN_UM <- defineUM(TRUE, distribution = "norm", distr_param = c(TN, TN_sd), crm = TN_crm, id = "TN")
 class(OC_UM)
+```
+
+```
+[1] "MarginalNumericSpatial"
+```
+
+```r
 class(TN_UM)
+```
+
+```
+[1] "MarginalNumericSpatial"
 ```
 
 Both variables are of the same class "MarginalNumericSpatial". This is one of the requirements for defining a multivariate uncertainty model next. We use the `defineMUM()` function to collate information about uncertainty in each variable as above, and information about their cross-correlation. The required function arguments are:
@@ -166,11 +201,16 @@ The correlation matrix must satisfy a range of conditions:
 - all values must belong to [-1, +1] range,
 - it has to be positive-definite (all eigenvalues must be > 0).
 
-```{r}
+
+```r
 # define multivariate uncertainty model
 mySpatialMUM <- defineMUM(UMlist = list(OC_UM, TN_UM), 
                           cormatrix = matrix(c(1,0.7,0.7,1), nrow=2, ncol=2))
 class(mySpatialMUM)
+```
+
+```
+[1] "JointNumericSpatial"
 ```
 
 <br>
@@ -187,24 +227,47 @@ Generating possible realities of the selected variables can be completed by usin
 Additional parameters may be also specified. For example, sampling of spatially correlated variable is based on the 'gstat' package that allows for limiting the number of nearest observations that should be used for simulation.
 
 
-```{r}
+
+```r
 # create possible realizations from the joint distribution of OC and TN
 OCTN_sample <- genSample(UMobject = mySpatialMUM, n = 3, samplemethod = "ugs", nmax = 20, asList = FALSE)
 ```
 
+```
+Linear Model of Coregionalization found. Good.
+[using unconditional Gaussian cosimulation]
+```
+
 Note the argument 'asList' has been set to FALSE. This indicates that the sampling function will return an object of a class of the distribution parameters class. This is useful if you want to visualize the sample or compute summary statistics quickly.
 
-```{r, fig.width = 7, fig.height = 5}
+
+```r
 # view the sample structure
 OCTN_sample
+```
 
+```
+class       : RasterStack 
+dimensions  : 134, 135, 18090, 6  (nrow, ncol, ncell, nlayers)
+resolution  : 250, 250  (x, y)
+extent      : 3024625, 3058375, -2514625, -2481125  (xmin, xmax, ymin, ymax)
+coord. ref. : +proj=laea +lat_0=5 +lon_0=20 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0 
+names       :    OC.sim1,    OC.sim2,    OC.sim3,    TN.sim1,    TN.sim2,    TN.sim3 
+min values  :  5.6096183,  6.3065236,  6.0443148,  0.5521439,  0.6014500,  0.5442084 
+max values  : 106.111421, 117.699482, 106.815170,   4.047288,   4.095120,   3.908364 
+```
+
+```r
 # plot realizations of OC and TN
 plot(OCTN_sample)
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+
 Usually the sample must be large to obtain stable results. Let us run the sampling to obtain 100 realizations. This may take a minute.
 
-```{r}
+
+```r
 # create possible realizations from the joint 
 # distribution of OC and TN
 MC <- 500
@@ -212,9 +275,15 @@ OCTN_sample <- genSample(UMobject = mySpatialMUM, n = MC,
                          samplemethod = "ugs", nmax = 20, asList = FALSE)
 ```
 
+```
+Linear Model of Coregionalization found. Good.
+[using unconditional Gaussian cosimulation]
+```
+
 We can view the means and standard deviations of the sampled OC and TN. If the number of samples was very large then the mean of the sample of each would equal the mean  OC and TN, and the sd would equal their sds.
 
-```{r, fig.width = 7, fig.height = 3}
+
+```r
 # compute and plot OC and TN sample statistics
 # e.g. mean and standard deviation
 OC_sample <- OCTN_sample[[1:MC]]
@@ -229,160 +298,27 @@ plot(OC_sample_mean, main = "Mean of OC realizations")
 plot(TN_sample_mean, main = "Mean of TN realizations")
 ```
 
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
+
 We can also view the cross-corelations between two variables.
 
-```{r, fig.width = 5, fig.height = 5, warning = FALSE} 
-# R package GGally provides a nice option for plotting correlations
-library(GGally)
-# octn <- cbind(as.data.frame(OC_sample[[1]]), as.data.frame(TN_sample[[1]]))
-octn <- cbind(as.data.frame(t(OC_sample[1,1,])), as.data.frame(t(TN_sample[1,1,])),
-              as.data.frame(t(OC_sample[1,2,])), as.data.frame(t(TN_sample[1,2,])),
-              as.data.frame(t(OC_sample[10,10,])), as.data.frame(t(TN_sample[10,10,])))
-colnames(octn) <- c("OC_loc1", "TN_loc1", "OC_loc2", "TN_loc2", "OC_loc3", "TN_loc3")
-
-ggscatmat(data = octn, alpha=0.15) 
-```
-
-
-#### Uncertainty propagation through the model that calculates C/N ratio
-
-In order to perform uncertainty propagation analysis using 'spup', the model through which uncertainty is propagated needs to be defined as an R function. A pre-defined model that calculates C/N using OC and TN as input is provided.  
-
-```{r} 
-# source code for the C/N model
-source("examples/C_N_model_raster.R")
-C_N_model_raster
-
-# C/N model
-C_N_model_raster <- function (OC, TN) OC/TN
-
-
-```
-
-The propagation of uncertainty occurs when the model is run with the uncertain inputs. Running the model with a sample of realizations of uncertain input variable(s) yields an equally large sample of model outputs that can be further analyzed. To run the C/N ratio model with the OC and TN realizations we use the `propagate()` function. The `propagate()` function takes as arguments:
-
-* a sample from the uncertain model inputs and any other remaining model inputs and parameters as a list.
-* the model as a function in R.
-* the number of Monte Carlo runs. This can be equal or smaller than the number of realizations of the uncertain input variable(s).
-
-In order to run the propagation function the samples of uncertain input variables must be saved in lists and then collated into a list of these lists. We can either coerce the existing **OCTN_sample** object or get it automatically setting up the 'asList' argument of `genSample()` to TRUE.
-
-```{r} 
-# coerce  a raster stack to a list 
-# in our example we consider two variables, so we need a list of two lists with realizations
-l <- list()
-l[[1]] <- map(1:100, function(x){OCTN_sample[[x]]})
-l[[2]] <- map(101:200, function(x){OCTN_sample[[x]]})
-OCTN_sample <- l
-     
-# or sample from uncertain input and return it automatically in a list by setting asList argument to TRUE (default)
-OCTN_sample <- genSample(UMobject = mySpatialMUM, n = MC, samplemethod = "ugs", nmax = 20, asList = TRUE)
-```
-
-```{r} 
-# run uncertainty propagation
-CN_sample <- propagate(realizations = OCTN_sample,
-                       model = C_N_model_raster, n = MC)
-```
-
-<br>
-
-#### Visualization of results
-
-We can now view the sample of model output realizations (i.e. C/N) and visualize uncertainty by calculating and plotting the sample mean and standard deviation. In our case we need to coerce the output of the `propagate()`function saved as a list back to a RasterStack. 
-
-
-```{r, fig.width = 7, fig.height = 5} 
-# coerce C/Ns list to a RasterStack
-CN_sample <- stack(CN_sample)
-names(CN_sample) <- paste("CN.", c(1:nlayers(CN_sample)), sep = "")
-
-# view the sample of the model output
-par(mfrow = c(1,1))
-plot(CN_sample[[1:6]])
-```
-
-```{r, fig.width = 7, fig.height = 5}
-# compute and plot the slope sample statistics
-# e.g. mean and standard deviation
-CN_mean <- mean(CN_sample)
-CN_sd <- calc(CN_sample, fun = sd) 
-par(mfrow = c(1,2))
-plot(CN_mean, main = "C/N mean")
-plot(CN_sd, main = "C/N sd")
-```
-
-We can also view C/N realizations at specific locations, for example where its mean is highest and lowest:
-
-```{r, fig.width = 7, fig.height = 3}
-l_mean <- mean(CN_sample[which.min(OC)])
-l_sd <- sd(CN_sample[which.min(OC)])
-h_mean <- mean(CN_sample[which.max(OC)])
-h_sd <- sd(CN_sample[which.max(OC)])
-
-par(mfrow = c(1,2))
-hist(CN_sample[which.min(OC)], main = paste("C/N at lowest OC,", "\n",
-     "mean = ", round(l_mean, 2), ", sd = ", round(l_sd, 2), sep = ""), xlab = "C/N")
-hist(CN_sample[which.max(OC)], main = paste("C/N at highiest OC,", "\n",
-     "mean = ", round(h_mean, 2), ", sd = ", round(h_sd, 2), sep = ""), xlab = "C/N")
-```
-
-We can also look at specific quantiles of the C/N ratio sample. The function `quantile_MC_sgdf` implemented in 'spup' allow us to do it quickly.
-
-```{r, fig.width = 7, fig.height = 7}
-# calculate quantiles
-CN_sample_df <- as(CN_sample, "SpatialGridDataFrame")
-CN_q <- quantile_MC_sgdf(CN_sample_df, probs = c(0.1, 0.25, 0.75, 0.9), na.rm = TRUE)
-spplot(CN_q[c(3,4,1,2)], main = list(label = "Quantiles of C/N realizations", cex = 1))
-```
-
-We may also identify all locations where the C/N ratio is smaller than 24, with 90% probability. This information might be used by farmers to identify which plots require action on improving soil quality.
-
-```{r, fig.width = 7, fig.height = 7}
-CN_q$good4crops <- factor(ifelse(CN_q$prob10perc > 20, 1, 0), labels = c("<90% certain", ">90% certain"))
-spplot(CN_q, "good4crops", col.regions = c("firebrick1", "darkolivegreen2"), main = "Areas with sufficient C/N for cropping")
-```
-<br>
-
-We can also calculate OC and TN uncertainty contribution to the uncertainty in predicting C/N. We have already calculated the total uncertainty in C/N predictions assuming both OC and TN are uncertain. To identify their contributions we can run the propagation with only one of them being uncertain. For the other input we take its mean as certain information.
-
-
-```{r, fig.width = 7, fig.height = 7}
-# calculate total variance as a measure of total uncertainty
-CN_tot_var <- calc(CN_sample, fun = var)
-
-# OC contribution
-OC_sample <- OCTN_sample[[1]]
-CN_sample_oc <- propagate(realizations = OC_sample, model = C_N_model_raster, TN = TN, n = MC)
-CN_sample_oc <- stack(CN_sample_oc)
-CN_oc_var <- calc(CN_sample_oc, fun = var)
-OC_contribution <- (CN_oc_var/CN_tot_var)*100
-
-# TN contribution
-TN_sample <- OCTN_sample[[2]]
-CN_sample_tn <- propagate(realizations = TN_sample, model = C_N_model_raster, OC = OC, n = MC)
-CN_sample_tn <- stack(CN_sample_tn)
-CN_tn_var <- calc(CN_sample_tn, fun = var)
-TN_contribution <- (CN_tn_var/CN_tot_var)*100
-
-# plot results
-par(mfrow = c(2,2))
-plot(CN_mean, main = "C/N mean")
-plot(CN_sd, main = "C/N sd")
-plot(OC_contribution, main = "OC contribution to total C/N var [%]")
-plot(TN_contribution, main = "TN contribution to total C/N var [%]")
-```
 
 
 
-### Acknowledgements
 
-The dataset was derived from the ISRIC Soil Grid database (www.soilgrids.org) (Hengl et al., 2017). 
 
-This project has received funding from the European Union’s Seventh Framework Programme for research, technological development and demonstration under grant agreement no 607000.
 
-### References
 
-HENGL, T., MENDES DE JESUS, J., HEUVELINK, G. B. M., RUIPEREZ GONZALEZ, M., KILIBARDA, M., BLAGOTIĆ, A., SHANGGUAN, W., WRIGHT, M. N., GENG, X., BAUER-MARSCHALLINGER, B., GUEVARA, M. A., VARGAS, R., MACMILLAN, R. A., BATJES, N. H., LEENAARS, J. G. B., RIBEIRO, E., WHEELER, I., MANTEL, S. & KEMPEN, B. 2017. SoilGrids250m: Global gridded soil information based on machine learning. PLOS ONE, 12, e0169748.
 
-WACKERNAGEL,  H.  2003.  Multivariate  Geostatistics:  An  Introduction  with  Applications, Springer. 
+
+
+
+
+
+
+
+
+
+
+
+

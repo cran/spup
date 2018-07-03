@@ -1,3 +1,11 @@
+## ---- include = FALSE----------------------------------------------------
+is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
+             "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
+knitr::opts_chunk$set(eval = !is_check)
+
+## ------------------------------------------------------------------------
+Sys.sleep(100)
+
 ## ---- echo = FALSE-------------------------------------------------------
 knitr::opts_chunk$set(
     comment = NA,
