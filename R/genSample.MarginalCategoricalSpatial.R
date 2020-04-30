@@ -52,7 +52,7 @@
 #' snowUM <- defineUM(uncertain = TRUE, categories = c("snow", "no snow"), cat_prob = dem_stack[[2:3]])
 #' snow_sample <- genSample(snowUM, 10, asList = FALSE)
 #' require(sp)
-#' spplot(snow_sample)
+#' plot(snow_sample)
 #'
 #' @importFrom raster stack
 #' @importFrom purrr map
@@ -97,6 +97,8 @@ genSample.MarginalCategoricalSpatial <- function(UMobject, n, samplemethod, p = 
   # sort out final product depending on if Raster or spatial data frame
   # and if object to be returned as list
   if (original_class == "RasterLayer") {
+    # convert data in the SpatialGridDataFrame to factor
+    X_sample@data[] <- lapply(X_sample@data, as.factor)
     X_sample <- raster::stack(X_sample)
     if (asList == TRUE) {
       X_sample <- purrr::map(1:n, function(x){X_sample[[x]]})

@@ -1,12 +1,12 @@
-## ---- include = FALSE----------------------------------------------------
+## ---- include = FALSE---------------------------------------------------------
 is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
              "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
 knitr::opts_chunk$set(eval = !is_check)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 Sys.sleep(100)
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 knitr::opts_chunk$set(
     comment = NA,
     quiet = TRUE,
@@ -19,14 +19,14 @@ knitr::opts_chunk$set(
     dpi = 100
 )
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 knitr::opts_knit$set(global.par = TRUE)
 
-## ---- echo = FALSE-------------------------------------------------------
+## ---- echo = FALSE------------------------------------------------------------
 par(mar = c(3, 3, 2, 2), mgp = c(1.7, 0.5, 0), las = 1, cex.main = 1, tcl = -0.2, cex.axis = 0.8,
     cex.lab = 0.8)
 
-## ---- fig.width = 5, fig.height = 5--------------------------------------
+## ---- fig.width = 5, fig.height = 5-------------------------------------------
 # load packages
 library(sp)
 library(spup)
@@ -58,19 +58,19 @@ spplot(woon, "check", do.log = TRUE, col.regions = "transparent",
 sp.layout = list(scale, text1, text2 ,arrow, NL_map),	
                  main = "Neighbourhood in Rotterdam, NL")
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # define uncertainty model for the bulding function
 woonUM <- defineUM(TRUE, categories = c(1,2,3), cat_prob = woon[, c(4:6)])
 class(woonUM)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 woon$check <- woon$residential + woon$office + woon$other
 summary(woon$check)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 spplot(woon[c(4,5,6)])
 
-## ---- fig.width = 7, fig.height = 7--------------------------------------
+## ---- fig.width = 7, fig.height = 7-------------------------------------------
 # create possible realizations of the building function
 woon_sample <- genSample(woonUM, 10, asList = FALSE)
 class(woon_sample)
@@ -78,7 +78,7 @@ class(woon_sample)
 # view several realizations
 spplot(woon_sample[c(3,4,1,2)], main = list(label = "Examples of building function realizations", cex = 1))
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 tax <- function(building_Function) { 
   building_Function$tax2pay <- NA
   building_Function$tax2pay[building_Function$Function == 1] <- 1000
@@ -88,7 +88,7 @@ tax <- function(building_Function) {
   total_tax
 }
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # coerce  SpatialPolygonDataFrame to a list of individual SpatialPolygonDataFrames
 woon_sample <- map(1:ncol(woon_sample), function(x){woon_sample[x]})
 
@@ -96,10 +96,10 @@ woon_sample <- map(1:ncol(woon_sample), function(x){woon_sample[x]})
 woon_sample <- genSample(UMobject = woonUM, n = 10, asList = TRUE)
 class(woon_sample)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 for (i in 1:10) names(woon_sample[[i]]) <- "Function"
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 # run uncertainty propagation
 tax_sample <- propagate(woon_sample, model = tax, n = 10)
 tax_sample

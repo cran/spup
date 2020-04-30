@@ -5,8 +5,7 @@
 \title{Generating Monte Carlo sample from an uncertain object of a class 
 'MarginalCategoricalSpatial'}
 \usage{
-\method{genSample}{MarginalCategoricalSpatial}(UMobject, n, samplemethod,
-  p = 0, asList = TRUE, ...)
+\method{genSample}{MarginalCategoricalSpatial}(UMobject, n, samplemethod, p = 0, asList = TRUE, ...)
 }
 \arguments{
 \item{UMobject}{uncertain object defined using defineUM().}

@@ -5,8 +5,16 @@
 \alias{makecrm}
 \title{Defining a spatial correlogram model}
 \usage{
-makeCRM(acf0 = 1, range = NA, model, anis, kappa = 0.5, add.to, covtable,
-  Err = 0)
+makeCRM(
+  acf0 = 1,
+  range = NA,
+  model,
+  anis,
+  kappa = 0.5,
+  add.to,
+  covtable,
+  Err = 0
+)
 }
 \arguments{
 \item{acf0}{Aurocorrelation function value at distance near 0. Default is 1. Must

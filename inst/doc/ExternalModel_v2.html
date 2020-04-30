@@ -1,47 +1,59 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <meta name="author" content="Kasia Sawicka and Dennis Walvoort" />
 
-<meta name="date" content="2018-07-02" />
+<meta name="date" content="2020-04-29" />
 
 <title>Spatial Uncertainty Propagation Analysis</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -50,9 +62,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -83,7 +95,29 @@ code span.st { color: #4070a0; } /* String */
 code span.va { color: #19177c; } /* Variable */
 code span.vs { color: #4070a0; } /* VerbatimString */
 code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -97,9 +131,6 @@ padding-right: 2em;
 font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
 font-size: 14px;
 line-height: 1.35;
-}
-#header {
-text-align: center;
 }
 #TOC {
 clear: both;
@@ -268,8 +299,12 @@ code > span.st { color: #d14; }
 code > span.co { color: #888888; font-style: italic; } 
 code > span.ot { color: #007020; } 
 code > span.al { color: #ff0000; font-weight: bold; } 
-code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61717; background-color: #e3d2d2; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
 </style>
+
+
+
 
 </head>
 
@@ -279,13 +314,13 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 
 
 <h1 class="title toc-ignore">Spatial Uncertainty Propagation Analysis</h1>
-<h3 class="subtitle"><em>Case study with calling external model.</em></h3>
-<h4 class="author"><em>Kasia Sawicka and Dennis Walvoort</em></h4>
-<h4 class="date"><em>2018-07-02</em></h4>
+<h3 class="subtitle">Case study with calling external model.</h3>
+<h4 class="author">Kasia Sawicka and Dennis Walvoort</h4>
+<h4 class="date">2020-04-29</h4>
 
 
 
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">Sys.sleep</span>(<span class="dv">100</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">Sys.sleep</span>(<span class="dv">100</span>)</span></code></pre></div>
 <div id="case-study-with-calling-external-model" class="section level1">
 <h1>Case study with calling external model</h1>
 <div id="introduction" class="section level3">
@@ -306,16 +341,16 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </div>
 <div id="uncertainty-propagation-analysis-with-spup" class="section level3">
 <h3>Uncertainty propagation analysis with ‘spup’</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co"># the 'spup' library contains functions described below</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="co"># and it loads all the dependencies</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="kw">library</span>(spup)</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="kw">library</span>(dplyr) <span class="co"># a grammar of data manipulation</span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="kw">library</span>(readr) <span class="co"># fast I/O</span></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="kw">library</span>(whisker) <span class="co"># rendering methods</span></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="kw">library</span>(purrr)</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="co"># set seed</span></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="kw">set.seed</span>(<span class="dv">12345</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># the &#39;spup&#39; library contains functions described below</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="co"># and it loads all the dependencies</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="kw">library</span>(spup)</span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="kw">library</span>(dplyr) <span class="co"># a grammar of data manipulation</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">library</span>(readr) <span class="co"># fast I/O</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">library</span>(whisker) <span class="co"># rendering methods</span></span>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="kw">library</span>(purrr)</span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="co"># set seed</span></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="kw">set.seed</span>(<span class="dv">12345</span>)</span></code></pre></div>
 <p>Spatial (or other) inputs to the models are often stored in ASCII files. In that case, when using external models in R we need additional code to:</p>
 <ol style="list-style-type: decimal">
 <li>Modify ASCII input files.</li>
@@ -332,38 +367,38 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <li>Input that needs to be modified is replaced by mustache-style tags.</li>
 </ol>
 <p>For example, suppose we have a model that needs the input file: <code>input.txt</code>. This input file contains two parameters “b0” and “b1”. The contents of the original file may look like:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="kw">read_lines</span>(<span class="st">&quot;examples/input.txt&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">read_lines</span>(<span class="st">&quot;examples/input.txt&quot;</span>)</span></code></pre></div>
 <pre><code>[1] &quot;3 4&quot;</code></pre>
 <p>The corresponding template file should be named as <code>input.txt.template</code>. It contains:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw">read_lines</span>(<span class="st">&quot;examples/input.txt.template&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">read_lines</span>(<span class="st">&quot;examples/input.txt.template&quot;</span>)</span></code></pre></div>
 <pre><code>[1] &quot;{{b0}} {{b1}}&quot;</code></pre>
 <p>We can see that the original numbers are replaced by symbols b0 and b1 placed in moustaches <code>{{</code> and <code>}}</code>.</p>
 <p>Rendering is the process of replacing the tags in moustaches by text. For this, render-methods for class “character” and “template” are provided. For example:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">my_template &lt;-<span class="st"> &quot;Hello {{name}}. How are you doing?&quot;</span></a>
-<a class="sourceLine" id="cb7-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">my_template <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="st">    </span><span class="kw">render</span>(<span class="dt">name =</span> <span class="st">&quot;Winnie the Pooh&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>my_template &lt;-<span class="st"> &quot;Hello {{name}}. How are you doing?&quot;</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a></span>
+<span id="cb7-3"><a href="#cb7-3"></a>my_template <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="st">    </span><span class="kw">render</span>(<span class="dt">name =</span> <span class="st">&quot;Winnie the Pooh&quot;</span>)</span></code></pre></div>
 <pre><code>[1] &quot;Hello Winnie the Pooh. How are you doing?&quot;</code></pre>
 <p>The example above calls method <code>render()</code> for the class “character”. It is also possible to fill an entire table:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">my_template &lt;-<span class="st"> </span><span class="kw">c</span>(</a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">    <span class="st">&quot;| x | y |&quot;</span>,</a>
-<a class="sourceLine" id="cb9-3" data-line-number="3">    <span class="st">&quot;|---|---|&quot;</span>,</a>
-<a class="sourceLine" id="cb9-4" data-line-number="4">    <span class="st">&quot;{{#MY_TABLE}}&quot;</span>,</a>
-<a class="sourceLine" id="cb9-5" data-line-number="5">    <span class="st">&quot;| {{X}} | {{Y}} |&quot;</span>,</a>
-<a class="sourceLine" id="cb9-6" data-line-number="6">    <span class="st">&quot;{{/MY_TABLE}}&quot;</span></a>
-<a class="sourceLine" id="cb9-7" data-line-number="7">)</a>
-<a class="sourceLine" id="cb9-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb9-9" data-line-number="9">my_table &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">X =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">Y =</span> letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])</a>
-<a class="sourceLine" id="cb9-10" data-line-number="10">my_table</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>my_template &lt;-<span class="st"> </span><span class="kw">c</span>(</span>
+<span id="cb9-2"><a href="#cb9-2"></a>    <span class="st">&quot;| x | y |&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="st">&quot;|---|---|&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="st">&quot;{{#MY_TABLE}}&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    <span class="st">&quot;| {{X}} | {{Y}} |&quot;</span>,</span>
+<span id="cb9-6"><a href="#cb9-6"></a>    <span class="st">&quot;{{/MY_TABLE}}&quot;</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>)</span>
+<span id="cb9-8"><a href="#cb9-8"></a></span>
+<span id="cb9-9"><a href="#cb9-9"></a>my_table &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">X =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dt">Y =</span> letters[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>])</span>
+<span id="cb9-10"><a href="#cb9-10"></a>my_table</span></code></pre></div>
 <pre><code>  X Y
 1 1 a
 2 2 b
 3 3 c
 4 4 d
 5 5 e</code></pre>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">my_template <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb11-2" data-line-number="2"><span class="st">    </span><span class="kw">render</span>(<span class="dt">MY_TABLE =</span> <span class="kw">unname</span>(<span class="kw">rowSplit</span>(my_table))) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb11-3" data-line-number="3"><span class="st">    </span>cat</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>my_template <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="st">    </span><span class="kw">render</span>(<span class="dt">MY_TABLE =</span> <span class="kw">unname</span>(<span class="kw">rowSplit</span>(my_table))) <span class="op">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="st">    </span>cat</span></code></pre></div>
 <pre><code>| x | y |
 |---|---|
 | 1 | a |
@@ -372,74 +407,74 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 | 4 | d |
 | 5 | e |</code></pre>
 <p>A template stored as a file will always be rendered on disk. Let’s return to our template on disk:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" data-line-number="1">my_template &lt;-<span class="st"> </span><span class="kw">template</span>(<span class="st">&quot;examples/input.txt.template&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>my_template &lt;-<span class="st"> </span><span class="kw">template</span>(<span class="st">&quot;examples/input.txt.template&quot;</span>)</span></code></pre></div>
 <p>with contents:</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" data-line-number="1">my_template <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb14-2" data-line-number="2"><span class="st">    </span>read_lines</a></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>my_template <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="st">    </span>read_lines</span></code></pre></div>
 <pre><code>[1] &quot;{{b0}} {{b1}}&quot;</code></pre>
 <p>Rendering will create a new file, called <code>input.txt</code>.</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" data-line-number="1">my_template <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"><span class="st">    </span><span class="kw">render</span>(<span class="dt">b0 =</span> <span class="dv">3</span>, <span class="dt">b1 =</span> <span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>my_template <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="st">    </span><span class="kw">render</span>(<span class="dt">b0 =</span> <span class="dv">3</span>, <span class="dt">b1 =</span> <span class="dv">4</span>)</span></code></pre></div>
 <pre><code>[1] &quot;examples/input.txt&quot;</code></pre>
 <p>As can be seen above, the path of this file is also the return value of the <code>render</code> method. This facilitates further processing by means of the pipe-operator:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" data-line-number="1">my_template <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2"><span class="st">    </span><span class="kw">render</span>(<span class="dt">b0 =</span> <span class="dv">3</span>, <span class="dt">b1 =</span> <span class="dv">4</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb18-3" data-line-number="3"><span class="st">    </span>read_lines</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>my_template <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-2"><a href="#cb18-2"></a><span class="st">    </span><span class="kw">render</span>(<span class="dt">b0 =</span> <span class="dv">3</span>, <span class="dt">b1 =</span> <span class="dv">4</span>) <span class="op">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a><span class="st">    </span>read_lines</span></code></pre></div>
 <pre><code>[1] &quot;3 4&quot;</code></pre>
 </div>
 <div id="running-external-models" class="section level2">
 <h2>Running external models</h2>
 <p>An external model can be called from R by means of the <code>system</code> or <code>system2</code> function. To facilitate this, <em>spup</em> includes the wrapper function <code>executable()</code>.</p>
 <p>Below is an example of an external model written in the C language:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
-<a class="sourceLine" id="cb20-2" data-line-number="2"></a>
-<a class="sourceLine" id="cb20-3" data-line-number="3"><span class="dt">int</span> main() {</a>
-<a class="sourceLine" id="cb20-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb20-5" data-line-number="5">  <span class="dt">FILE</span> *fp;</a>
-<a class="sourceLine" id="cb20-6" data-line-number="6">  <span class="dt">double</span> x[<span class="dv">9</span>] = {<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">4.0</span>, <span class="fl">5.0</span>, <span class="fl">6.0</span>, <span class="fl">7.0</span>, <span class="fl">8.0</span>, <span class="fl">9.0</span>};</a>
-<a class="sourceLine" id="cb20-7" data-line-number="7">  <span class="dt">double</span> y;</a>
-<a class="sourceLine" id="cb20-8" data-line-number="8">  <span class="dt">double</span> b0;</a>
-<a class="sourceLine" id="cb20-9" data-line-number="9">  <span class="dt">double</span> b1;</a>
-<a class="sourceLine" id="cb20-10" data-line-number="10">  <span class="dt">int</span> i;</a>
-<a class="sourceLine" id="cb20-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb20-12" data-line-number="12">  fp = fopen(<span class="st">&quot;input.txt&quot;</span>, <span class="st">&quot;r&quot;</span>);</a>
-<a class="sourceLine" id="cb20-13" data-line-number="13">  <span class="cf">if</span> (fp == NULL) {</a>
-<a class="sourceLine" id="cb20-14" data-line-number="14">    printf(<span class="st">&quot;Can't read input.txt</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
-<a class="sourceLine" id="cb20-15" data-line-number="15">    <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb20-16" data-line-number="16">  }</a>
-<a class="sourceLine" id="cb20-17" data-line-number="17">  fscanf(fp, <span class="st">&quot;%lf %lf</span><span class="sc">\n</span><span class="st">&quot;</span>, &amp;b0, &amp;b1);</a>
-<a class="sourceLine" id="cb20-18" data-line-number="18">  fclose(fp);</a>
-<a class="sourceLine" id="cb20-19" data-line-number="19"></a>
-<a class="sourceLine" id="cb20-20" data-line-number="20">  fp = fopen(<span class="st">&quot;output.txt&quot;</span>, <span class="st">&quot;w&quot;</span>);</a>
-<a class="sourceLine" id="cb20-21" data-line-number="21">  <span class="cf">if</span> (fp == NULL) {</a>
-<a class="sourceLine" id="cb20-22" data-line-number="22">    printf(<span class="st">&quot;Can't create output.txt</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
-<a class="sourceLine" id="cb20-23" data-line-number="23">    <span class="cf">return</span> <span class="dv">1</span>;</a>
-<a class="sourceLine" id="cb20-24" data-line-number="24">  }</a>
-<a class="sourceLine" id="cb20-25" data-line-number="25">  <span class="cf">else</span> {</a>
-<a class="sourceLine" id="cb20-26" data-line-number="26">    <span class="cf">for</span> (i=<span class="dv">0</span>; i&lt;<span class="dv">9</span>; i++) {</a>
-<a class="sourceLine" id="cb20-27" data-line-number="27">      y = b0 + b1 * x[i];</a>
-<a class="sourceLine" id="cb20-28" data-line-number="28">      fprintf(fp, <span class="st">&quot;%10.2f</span><span class="sc">\n</span><span class="st">&quot;</span>, y);</a>
-<a class="sourceLine" id="cb20-29" data-line-number="29">    }</a>
-<a class="sourceLine" id="cb20-30" data-line-number="30">    fclose(fp);</a>
-<a class="sourceLine" id="cb20-31" data-line-number="31">  }</a>
-<a class="sourceLine" id="cb20-32" data-line-number="32"></a>
-<a class="sourceLine" id="cb20-33" data-line-number="33">  <span class="cf">return</span> <span class="dv">0</span>;</a>
-<a class="sourceLine" id="cb20-34" data-line-number="34">}</a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb20-1"><a href="#cb20-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a></span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="dt">int</span> main() {</span>
+<span id="cb20-4"><a href="#cb20-4"></a></span>
+<span id="cb20-5"><a href="#cb20-5"></a>  <span class="dt">FILE</span> *fp;</span>
+<span id="cb20-6"><a href="#cb20-6"></a>  <span class="dt">double</span> x[<span class="dv">9</span>] = {<span class="fl">1.0</span>, <span class="fl">2.0</span>, <span class="fl">3.0</span>, <span class="fl">4.0</span>, <span class="fl">5.0</span>, <span class="fl">6.0</span>, <span class="fl">7.0</span>, <span class="fl">8.0</span>, <span class="fl">9.0</span>};</span>
+<span id="cb20-7"><a href="#cb20-7"></a>  <span class="dt">double</span> y;</span>
+<span id="cb20-8"><a href="#cb20-8"></a>  <span class="dt">double</span> b0;</span>
+<span id="cb20-9"><a href="#cb20-9"></a>  <span class="dt">double</span> b1;</span>
+<span id="cb20-10"><a href="#cb20-10"></a>  <span class="dt">int</span> i;</span>
+<span id="cb20-11"><a href="#cb20-11"></a></span>
+<span id="cb20-12"><a href="#cb20-12"></a>  fp = fopen(<span class="st">&quot;input.txt&quot;</span>, <span class="st">&quot;r&quot;</span>);</span>
+<span id="cb20-13"><a href="#cb20-13"></a>  <span class="cf">if</span> (fp == NULL) {</span>
+<span id="cb20-14"><a href="#cb20-14"></a>    printf(<span class="st">&quot;Can&#39;t read input.txt</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb20-15"><a href="#cb20-15"></a>    <span class="cf">return</span> <span class="dv">1</span>;</span>
+<span id="cb20-16"><a href="#cb20-16"></a>  }</span>
+<span id="cb20-17"><a href="#cb20-17"></a>  fscanf(fp, <span class="st">&quot;%lf %lf</span><span class="sc">\n</span><span class="st">&quot;</span>, &amp;b0, &amp;b1);</span>
+<span id="cb20-18"><a href="#cb20-18"></a>  fclose(fp);</span>
+<span id="cb20-19"><a href="#cb20-19"></a></span>
+<span id="cb20-20"><a href="#cb20-20"></a>  fp = fopen(<span class="st">&quot;output.txt&quot;</span>, <span class="st">&quot;w&quot;</span>);</span>
+<span id="cb20-21"><a href="#cb20-21"></a>  <span class="cf">if</span> (fp == NULL) {</span>
+<span id="cb20-22"><a href="#cb20-22"></a>    printf(<span class="st">&quot;Can&#39;t create output.txt</span><span class="sc">\n</span><span class="st">&quot;</span>);</span>
+<span id="cb20-23"><a href="#cb20-23"></a>    <span class="cf">return</span> <span class="dv">1</span>;</span>
+<span id="cb20-24"><a href="#cb20-24"></a>  }</span>
+<span id="cb20-25"><a href="#cb20-25"></a>  <span class="cf">else</span> {</span>
+<span id="cb20-26"><a href="#cb20-26"></a>    <span class="cf">for</span> (i=<span class="dv">0</span>; i&lt;<span class="dv">9</span>; i++) {</span>
+<span id="cb20-27"><a href="#cb20-27"></a>      y = b0 + b1 * x[i];</span>
+<span id="cb20-28"><a href="#cb20-28"></a>      fprintf(fp, <span class="st">&quot;%10.2f</span><span class="sc">\n</span><span class="st">&quot;</span>, y);</span>
+<span id="cb20-29"><a href="#cb20-29"></a>    }</span>
+<span id="cb20-30"><a href="#cb20-30"></a>    fclose(fp);</span>
+<span id="cb20-31"><a href="#cb20-31"></a>  }</span>
+<span id="cb20-32"><a href="#cb20-32"></a></span>
+<span id="cb20-33"><a href="#cb20-33"></a>  <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb20-34"><a href="#cb20-34"></a>}</span></code></pre></div>
 <p>You can copy this code into a text file and save with the extension “.C”. For example, <code>dummy_model.C</code>. This model calculates a value of a simple simple linear regression model. To compile this code to a MS-Windows executable you can use a free C compiler GCC running command <code>gcc dummy_model.c -o dummy_model</code>. This will create a file <code>dummy_model.exe</code>.</p>
 <p>We can now wrap this model in R as follows:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" data-line-number="1">dummy_model &lt;-<span class="st"> </span><span class="kw">executable</span>(<span class="st">&quot;examples/dummy_model.exe&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>dummy_model &lt;-<span class="st"> </span><span class="kw">executable</span>(<span class="st">&quot;examples/dummy_model.exe&quot;</span>)</span></code></pre></div>
 <p>Running the rendering procedure allows to pass any values for b0 ad b1 and the model gives:</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" data-line-number="1"><span class="co"># create template</span></a>
-<a class="sourceLine" id="cb22-2" data-line-number="2">my_template &lt;-<span class="st"> </span><span class="kw">template</span>(<span class="st">&quot;examples/input.txt.template&quot;</span>)</a>
-<a class="sourceLine" id="cb22-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb22-4" data-line-number="4"><span class="co"># render the template</span></a>
-<a class="sourceLine" id="cb22-5" data-line-number="5"><span class="kw">render</span>(my_template, <span class="dt">b0 =</span> <span class="fl">3.1</span>, <span class="dt">b1 =</span> <span class="fl">4.2</span>)</a>
-<a class="sourceLine" id="cb22-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb22-7" data-line-number="7"><span class="co"># run external model</span></a>
-<a class="sourceLine" id="cb22-8" data-line-number="8"><span class="kw">dummy_model</span>()</a>
-<a class="sourceLine" id="cb22-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb22-10" data-line-number="10"><span class="co"># read output (output file of dummy_model is &quot;output.txt&quot;)</span></a>
-<a class="sourceLine" id="cb22-11" data-line-number="11"><span class="kw">scan</span>(<span class="dt">file =</span> <span class="st">&quot;examples/output.txt&quot;</span>, <span class="dt">quiet =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="co"># create template</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a>my_template &lt;-<span class="st"> </span><span class="kw">template</span>(<span class="st">&quot;examples/input.txt.template&quot;</span>)</span>
+<span id="cb22-3"><a href="#cb22-3"></a></span>
+<span id="cb22-4"><a href="#cb22-4"></a><span class="co"># render the template</span></span>
+<span id="cb22-5"><a href="#cb22-5"></a><span class="kw">render</span>(my_template, <span class="dt">b0 =</span> <span class="fl">3.1</span>, <span class="dt">b1 =</span> <span class="fl">4.2</span>)</span>
+<span id="cb22-6"><a href="#cb22-6"></a></span>
+<span id="cb22-7"><a href="#cb22-7"></a><span class="co"># run external model</span></span>
+<span id="cb22-8"><a href="#cb22-8"></a><span class="kw">dummy_model</span>()</span>
+<span id="cb22-9"><a href="#cb22-9"></a></span>
+<span id="cb22-10"><a href="#cb22-10"></a><span class="co"># read output (output file of dummy_model is &quot;output.txt&quot;)</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a><span class="kw">scan</span>(<span class="dt">file =</span> <span class="st">&quot;examples/output.txt&quot;</span>, <span class="dt">quiet =</span> <span class="ot">TRUE</span>)</span></code></pre></div>
 <p>To perform the uncertainty propagation analysis we need to derive multiple realizations of the model output in steps as follows:</p>
 <ol style="list-style-type: decimal">
 <li>Render the template.</li>
@@ -448,23 +483,23 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 <li>Process the results.</li>
 </ol>
 <p>For example:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" data-line-number="1"><span class="co"># number of Monte Carlo runs</span></a>
-<a class="sourceLine" id="cb23-2" data-line-number="2">n_realizations &lt;-<span class="st"> </span><span class="dv">100</span></a>
-<a class="sourceLine" id="cb23-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb23-4" data-line-number="4">n_realizations <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-5" data-line-number="5"><span class="st">    </span>purrr<span class="op">::</span><span class="kw">rerun</span>({</a>
-<a class="sourceLine" id="cb23-6" data-line-number="6">        <span class="co"># render template</span></a>
-<a class="sourceLine" id="cb23-7" data-line-number="7">        <span class="kw">render</span>(my_template, <span class="dt">b0 =</span> <span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">1</span>), <span class="dt">b1 =</span> <span class="kw">runif</span>(<span class="dt">n =</span> <span class="dv">1</span>))</a>
-<a class="sourceLine" id="cb23-8" data-line-number="8">        </a>
-<a class="sourceLine" id="cb23-9" data-line-number="9">        <span class="co"># run model</span></a>
-<a class="sourceLine" id="cb23-10" data-line-number="10">        <span class="kw">dummy_model</span>()</a>
-<a class="sourceLine" id="cb23-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb23-12" data-line-number="12">        <span class="co"># read output</span></a>
-<a class="sourceLine" id="cb23-13" data-line-number="13">        <span class="kw">scan</span>(<span class="st">&quot;examples/output.txt&quot;</span>, <span class="dt">quiet =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb23-14" data-line-number="14">    }) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-15" data-line-number="15"><span class="st">    </span><span class="kw">set_names</span>(<span class="kw">paste0</span>(<span class="st">&quot;r&quot;</span>, <span class="dv">1</span><span class="op">:</span>n_realizations)) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb23-16" data-line-number="16"><span class="st">    </span>as_data_frame <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb23-17" data-line-number="17"><span class="st">    </span><span class="kw">apply</span>(<span class="dt">MARGIN =</span> <span class="dv">1</span>, <span class="dt">FUN =</span> quantile)    </a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># number of Monte Carlo runs</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a>n_realizations &lt;-<span class="st"> </span><span class="dv">100</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a></span>
+<span id="cb23-4"><a href="#cb23-4"></a>n_realizations <span class="op">%&gt;%</span></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="st">    </span>purrr<span class="op">::</span><span class="kw">rerun</span>({</span>
+<span id="cb23-6"><a href="#cb23-6"></a>        <span class="co"># render template</span></span>
+<span id="cb23-7"><a href="#cb23-7"></a>        <span class="kw">render</span>(my_template, <span class="dt">b0 =</span> <span class="kw">rnorm</span>(<span class="dt">n =</span> <span class="dv">1</span>), <span class="dt">b1 =</span> <span class="kw">runif</span>(<span class="dt">n =</span> <span class="dv">1</span>))</span>
+<span id="cb23-8"><a href="#cb23-8"></a>        </span>
+<span id="cb23-9"><a href="#cb23-9"></a>        <span class="co"># run model</span></span>
+<span id="cb23-10"><a href="#cb23-10"></a>        <span class="kw">dummy_model</span>()</span>
+<span id="cb23-11"><a href="#cb23-11"></a></span>
+<span id="cb23-12"><a href="#cb23-12"></a>        <span class="co"># read output</span></span>
+<span id="cb23-13"><a href="#cb23-13"></a>        <span class="kw">scan</span>(<span class="st">&quot;examples/output.txt&quot;</span>, <span class="dt">quiet =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb23-14"><a href="#cb23-14"></a>    }) <span class="op">%&gt;%</span></span>
+<span id="cb23-15"><a href="#cb23-15"></a><span class="st">    </span><span class="kw">set_names</span>(<span class="kw">paste0</span>(<span class="st">&quot;r&quot;</span>, <span class="dv">1</span><span class="op">:</span>n_realizations)) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb23-16"><a href="#cb23-16"></a><span class="st">    </span>as_data_frame <span class="op">%&gt;%</span></span>
+<span id="cb23-17"><a href="#cb23-17"></a><span class="st">    </span><span class="kw">apply</span>(<span class="dt">MARGIN =</span> <span class="dv">1</span>, <span class="dt">FUN =</span> quantile)    </span></code></pre></div>
 <div id="acknowledgements" class="section level3">
 <h3>Acknowledgements</h3>
 <p>Thanks to Dennis Walvoort for his valuable contribution to the development of the ‘spup’ package.</p>
@@ -473,6 +508,9 @@ code > span.fu { color: #900; font-weight: bold; }  code > span.er { color: #a61
 </div>
 </div>
 
+
+
+<!-- code folding -->
 
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
