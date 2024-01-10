@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 is_check <- ("CheckExEnv" %in% search()) || any(c("_R_CHECK_TIMINGS_",
              "_R_CHECK_LICENSE_") %in% names(Sys.getenv()))
 knitr::opts_chunk$set(eval = !is_check)
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(eval = !is_check)
 ## -----------------------------------------------------------------------------
 Sys.sleep(100)
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 knitr::opts_chunk$set(
     comment = NA,
     quiet = TRUE,
@@ -19,10 +19,10 @@ knitr::opts_chunk$set(
     dpi = 100
 )
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 knitr::opts_knit$set(global.par = TRUE)
 
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 par(mar = c(3, 3, 2, 2), mgp = c(1.7, 0.5, 0), las = 1, cex.main = 1, tcl = -0.2, cex.axis = 0.8,
     cex.lab = 0.8)
 
@@ -83,10 +83,10 @@ my_template %>%
     render(b0 = 3, b1 = 4) %>%
     read_lines
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  dummy_model <- executable("examples/dummy_model.exe")
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  # create template
 #  my_template <- template("examples/input.txt.template")
 #  
@@ -99,7 +99,7 @@ my_template %>%
 #  # read output (output file of dummy_model is "output.txt")
 #  scan(file = "examples/output.txt", quiet = TRUE)
 
-## ---- eval = FALSE------------------------------------------------------------
+## ----eval = FALSE-------------------------------------------------------------
 #  # number of Monte Carlo runs
 #  n_realizations <- 100
 #  
